@@ -7,13 +7,16 @@ import com.shykhov.backtest.api.common.dto.TickOutputType
 import com.shykhov.backtest.application.BtResultService
 import com.shykhov.backtest.application.BtService
 import com.shykhov.backtest.application.BtTypeConfigService
+import com.shykhov.common.candle.subject.TickSubject
 import com.shykhov.common.candle.timeframe.TimeFrame
 import com.shykhov.common.commonDto.TickDto
 import com.shykhov.common.commonDto.TickDto.Companion.toLinearPointResp
+import com.shykhov.common.commonDto.TimeFrameDto
 import com.shykhov.common.enums.Exchange
 import com.shykhov.common.enums.PairType
 import com.shykhov.common.sharedClasses.Ticker.Companion.ticker
 import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.tags.Tag
 import java.time.Clock
 import java.time.Instant
@@ -56,19 +59,30 @@ class BacktestController(
 
     @GetMapping("/init")
     suspend fun init(
+        @Parameter(example = "BTC")
         @RequestParam("buyBase") buyBase: String,
+        @Parameter(example = "USDT")
         @RequestParam("buyQuote") buyQuote: String,
+        @Parameter(example = "BINANCE")
         @RequestParam("buyExchange") buyExchange: Exchange,
+        @Parameter(example = "FUTURES")
         @RequestParam("buyType") buyType: PairType,
+        @Parameter(example = "BTC")
         @RequestParam("sellBase") sellBase: String,
+        @Parameter(example = "USDT")
         @RequestParam("sellQuote") sellQuote: String,
+        @Parameter(example = "MEXC")
         @RequestParam("sellExchange") sellExchange: Exchange,
+        @Parameter(example = "FUTURES")
         @RequestParam("sellType") sellType: PairType,
+        @Parameter(example = "PRICE_SPREAD")
         @RequestParam("btType") btType: BtType,
-        @RequestParam("btParams") btParams: Set<String>,
-        @RequestParam("timeFrom") timeFrom: Instant,
-        @RequestParam("timeTo") timeTo: Instant,
+        @RequestParam("btParams") btParams: Set<String> = emptySet(),
+        @RequestParam("timeFrom") timeFrom: Instant? = null,
+        @RequestParam("timeTo") timeTo: Instant? = null,
     ): ResponseEntity<BtDto> {
+        val timeFrom = timeFrom ?: clock.instant().minusSeconds(60 * 60 * 24 * 30)
+        val timeTo = timeTo ?: clock.instant()
 
         val buyBqet = buyBase.ticker / buyQuote.ticker on buyExchange type buyType
         val sellBqet = sellBase.ticker / sellQuote.ticker on sellExchange type sellType
@@ -79,6 +93,8 @@ class BacktestController(
             btParams = btParams,
             timeFrom = timeFrom,
             timeTo = timeTo,
+            timeFrame = TimeFrame.SECONDS_30
+
         )
         val dto = BtDto.fromModel(result)
         return if (dto != null) {
@@ -90,7 +106,7 @@ class BacktestController(
 
     @GetMapping("/{id}")
     suspend fun get(
-        @RequestParam("id") id: String,
+        @RequestParam("id") id: Long,
     ): ResponseEntity<BtDto> {
         val resp = btService.get(id)
         val dto = BtDto.fromModel(resp)
@@ -103,7 +119,7 @@ class BacktestController(
 
     @GetMapping("/{id}/result/{tickOutputType}")
     suspend fun getResult(
-        @PathVariable("id") id: String,
+        @PathVariable("id") id: Long,
         @PathVariable("tickOutputType") type: TickOutputType,
     ): ResponseEntity<List<TickDto>> {
         val timeFrame = TimeFrame.SECONDS_30

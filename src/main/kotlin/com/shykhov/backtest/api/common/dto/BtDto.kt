@@ -15,6 +15,7 @@ import com.shykhov.common.sharedClasses.bqetBs.BqetBs.Companion.sellType
 import java.time.Instant
 
 data class BtDto(
+    val id: Long,
     val buyBase: Ticker,
     val buyQuote: Ticker,
     val buyExchange: Exchange,
@@ -25,19 +26,17 @@ data class BtDto(
     val sellType: PairType,
     val btType: BtType,
     val btParams: Set<String>,
-    val id: String,
     val status: String,
     val startedAt: Instant,
     val finishedAt: Instant?,
     val config: BtTypeConfig,
     val outputConfig: BtTypeConfig?,
-    val result: Any?,
     val timeFrom: Instant,
     val timeTo: Instant,
 ) {
     companion object {
         fun fromModel(model: BtModel?): BtDto? {
-            if(model == null) {
+            if (model == null) {
                 return null
             }
             return BtDto(
@@ -51,13 +50,12 @@ data class BtDto(
                 sellType = model.bqetBs.sellType,
                 btType = model.btType,
                 btParams = model.btParams,
-                id = model.id,
+                id = model.id!!,
                 status = model.status,
                 startedAt = model.startedAt,
                 finishedAt = model.finishedAt,
                 config = model.config,
                 outputConfig = model.outputConfig,
-                result = model.result,
                 timeFrom = model.timeFrom,
                 timeTo = model.timeTo,
             )

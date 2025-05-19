@@ -1,5 +1,6 @@
 package com.shykhov.backtest.infrastructure.config
 
+import com.shykhov.api.candle.client.CandleClientConfig
 import com.shykhov.common.config.DisabledCorsConfig
 import com.shykhov.common.config.ExtendedOpenApiConfig
 import com.shykhov.common.config.GlobalApiClientConfig
@@ -21,5 +22,6 @@ import org.springframework.context.annotation.Import
     OAuth2ClientConfig::class,
     RsocketSecurityConfig::class,
     LatencyMetricsConfig::class,
+    CandleClientConfig::class,
 )
 class AppConfig

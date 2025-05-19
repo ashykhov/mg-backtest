@@ -17,7 +17,7 @@ plugins {
 }
 
 `добавить гамна` {
-
+    implementation("io.hypersistence:hypersistence-utils-hibernate-60:3.7.0")
     implementation("org.springframework.kafka:spring-kafka:${Versions.spring}")
     implementation("io.projectreactor.kafka:reactor-kafka:1.3.23")
     testImplementation("org.springframework.kafka:spring-kafka-test:${Versions.spring}")

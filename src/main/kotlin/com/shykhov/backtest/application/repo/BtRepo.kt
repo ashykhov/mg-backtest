@@ -5,5 +5,4 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface BtRepo : JpaRepository<BtEntity, Long> {
-    fun findByBtId(btId: String): BtEntity?
 }

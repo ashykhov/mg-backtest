@@ -22,7 +22,6 @@ spring:
     base-path: "/${spring.application.name}"
     problemdetails:
       enabled: true
-  # R2DBC конфигурация с использованием автоконфигурации Spring Boot
   datasource:
     url: 'jdbc:postgresql://${SPRING_DATABASE_URL}'
     password: ${SPRING_DATABASE_PASSWORD}
@@ -50,7 +49,7 @@ spring:
         archive.autodetection: class, hbm
         id.db_structure_naming_strategy: legacy
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
   # Flyway для миграций
   flyway:
     enabled: true
@@ -63,70 +62,9 @@ spring:
   codec:
     max-in-memory-size: 1MB
 
-  kafka:
-    bootstrap-servers: ${MG_KAFKA_URL}
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-      client-id: ${spring.application.name}-producer
-      compression-type: lz4
-    consumer:
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      group-id: ${spring.application.name}-consumer
-      max-poll-records: 1000
-      properties:
-        spring.json.trusted.packages: "*"
-        fetch.max.wait.ms: 50
-
-app:
-  kafka:
-    topic:
-      tick-fund-rate: tick-fund-rate
-      tick-calc-prft: tick-calc-prft
-      tick-perp-ask: tick-perp-ask
-      tick-perp-bid: tick-perp-bid
-      tick-spot-ask: tick-spot-ask
-      tick-spot-bid: tick-spot-bid
-
-scheduling:
-  # Частота сохранения снимков данных
-  snapshotFunding: ${MG_SCHEDULING_SNAPSHOT_CRON_FUNDING:0 * * * * *}
-  snapshotPrice: ${MG_SCHEDULING_SNAPSHOT_CRON_PRICE:0 * * * * *}
-  # Частота выполнения очистки
-  snapshotFundingCleanup: ${MG_SCHEDULING_SNAPSHOT_CLEANUP_CRON_FUNDING:0 0 * * * *}
-  snapshotPriceCleanup: ${MG_SCHEDULING_SNAPSHOT_CLEANUP_CRON_PRICE:0 0 * * * *}
-  # Срок хранения данных
-  snapshotFundingKeepAlive: ${MG_SCHEDULING_SNAPSHOT_KEEP_ALIVE_FUNDING:7d}
-  snapshotPriceKeepAlive: ${MG_SCHEDULING_SNAPSHOT_KEEP_ALIVE_PRICE:7d}
-
-backtest:
-  capture:
-    enabled-input:
-      SPOT_ASK: ${MG_BACKTEST_CAPTURE_ENABLED_SPOT_ASK}
-      SPOT_BID: ${MG_BACKTEST_CAPTURE_ENABLED_SPOT_BID}
-      PERP_ASK: ${MG_BACKTEST_CAPTURE_ENABLED_PERP_ASK}
-      PERP_BID: ${MG_BACKTEST_CAPTURE_ENABLED_PERP_BID}
-      FUND_RATE: ${MG_BACKTEST_CAPTURE_ENABLED_FUNDING_RATE}
-      CALC_PRFT: ${MG_BACKTEST_CAPTURE_ENABLED_CALCULATION_PROFIT}
-    retention-input:
-      "10s": ${MG_BACKTEST_RETENTION_SECONDS_10:5000}
-      "30s": ${MG_BACKTEST_RETENTION_SECONDS_30:5000}
-      "1m": ${MG_BACKTEST_RETENTION_MINUTES_1:5000}
-      "5m": ${MG_BACKTEST_RETENTION_MINUTES_5:5000}
-    tick-retention:
-      SPOT_ASK: ${MG_TICK_RETENTION_SPOT_ASK:PT20M}
-      SPOT_BID: ${MG_TICK_RETENTION_SPOT_BID:PT20M}
-      PERP_ASK: ${MG_TICK_RETENTION_PRICE_ASK:PT20M}
-      PERP_BID: ${MG_TICK_RETENTION_PRICE_BID:PT20M}
-      FUND_RATE: ${MG_TICK_RETENTION_FUNDING_RATE:PT20M}
-      CALC_PRFT: ${MG_TICK_RETENTION_CALCULATION_PROFIT:PT20M}
-    backtests-per-chunk: ${MG_BACKTEST_CHUNK_SIZE:100}
-    compress-backtest-after: ${MG_BACKTEST_COMPRESS_AFTER:500}
-# Metrics
 api:
   url:
-    candle: ${MG_CANDLE_API_URL:http://localhost:8095/candle}
+    candle: ${MG_API_URL_CANDLE}
 
 management:
   endpoints.web.exposure.include: "*"

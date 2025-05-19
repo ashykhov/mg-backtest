@@ -26,8 +26,8 @@ class BtResultService(
     private val candleClient: CandleClient,
 ) {
 
-    suspend fun getResult(btId: String, type: TickOutputType): List<ITick> {
-        val backtest = btService.get(btId) ?: return emptyList()
+    suspend fun getResult(id: Long, type: TickOutputType): List<ITick> {
+        val backtest = btService.get(id) ?: return emptyList()
 
         val res = when (type) {
             PRICE_BUY_BID -> processPriceBuyBid(backtest)

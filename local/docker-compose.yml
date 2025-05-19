@@ -7,7 +7,7 @@ services:
     container_name: backtest-database
     restart: unless-stopped
     ports:
-      - "63593:5432"
+      - "63598:5432"
     environment:
       - POSTGRES_DB=backtest
       - POSTGRES_USER=admin

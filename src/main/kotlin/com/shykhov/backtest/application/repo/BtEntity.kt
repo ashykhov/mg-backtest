@@ -1,9 +1,14 @@
 package com.shykhov.backtest.application.repo
 
 import com.shykhov.backtest.api.common.dto.BtType
+import com.shykhov.backtest.api.common.dto.BtTypeConfig
+import com.shykhov.backtest.application.model.BtModel
+import com.shykhov.common.candle.timeframe.TimeFrame
 import com.shykhov.common.enums.Exchange
 import com.shykhov.common.enums.PairType
 import com.shykhov.common.sharedClasses.Ticker
+import com.shykhov.common.sharedClasses.bqet.Bqet.Companion.toBqetBs
+import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -13,6 +18,7 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import java.time.Instant
+import org.hibernate.annotations.Type
 
 @Entity
 @Table(name = "backtests")
@@ -21,9 +27,6 @@ data class BtEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     val id: Long? = null,
-
-    @Column(name = "bt_id", nullable = false, unique = true)
-    val btId: String,
 
     @Column(name = "buy_base")
     val buyBase: Ticker,
@@ -48,8 +51,9 @@ data class BtEntity(
     @Column(name = "bt_type")
     val btType: BtType,
 
+    @Type(JsonType::class)
     @Column(name = "bt_params", columnDefinition = "jsonb")
-    val btParams: String,
+    val btParams: Set<String>,
 
     @Column(name = "status")
     val status: String,
@@ -60,18 +64,43 @@ data class BtEntity(
     @Column(name = "job_finished_at", nullable = true)
     val jobFinishedAt: Instant?,
 
+    @Type(JsonType::class)
     @Column(name = "config", columnDefinition = "jsonb")
-    val config: String,
+    val config: BtTypeConfig,
 
+    @Type(JsonType::class)
     @Column(name = "output_config", columnDefinition = "jsonb", nullable = true)
-    val outputConfig: String?,
-
-    @Column(name = "result", columnDefinition = "jsonb", nullable = true)
-    val result: String?,
+    val outputConfig: BtTypeConfig?,
 
     @Column(name = "time_from")
     val timeFrom: Instant,
 
     @Column(name = "time_to")
     val timeTo: Instant,
-)
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "timetrame")
+    val timeFrame: TimeFrame,
+
+    ) {
+
+    fun toModel(): BtModel {
+        val buyBqet = buyBase / buyQuote on buyExchange type buyType
+        val sellBqet = sellBase / sellQuote on sellExchange type sellType
+
+        return BtModel(
+            bqetBs = buyBqet toBqetBs sellBqet,
+            btType = btType,
+            btParams = btParams,
+            id = id!!,
+            status = status,
+            startedAt = jobStartedAt,
+            finishedAt = jobFinishedAt,
+            config = config,
+            outputConfig = outputConfig,
+            timeFrom = timeFrom,
+            timeTo = timeTo,
+            timeFrame = timeFrame,
+        )
+    }
+}
