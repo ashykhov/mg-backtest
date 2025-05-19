@@ -1,5 +1,9 @@
 spring:
   application.name: ${MG_APP_NAME:backtest}
+  datasource:
+    url: 'jdbc:postgresql://localhost:63593/backtest'
+    password: admin
+    username: admin
   security:
     oauth2:
       resourceserver:
@@ -22,8 +26,25 @@ spring:
 #        format_sql: true
 #        generate_statistics: false
 
-eureka.client.enabled: true
-eureka.client.fetch-registry: true
+MG_SERVER_PORT: 8110
+MG_KAFKA_URL: localhost:9092
+
+api:
+  url:
+    candle: http://localhost:8095/candle
+
+backtest:
+  capture:
+    enabled-input:
+      SPOT_ASK: false
+      SPOT_BID: false
+      PERP_ASK: false
+      PERP_BID: false
+      FUND_RATE: false
+      CALC_PRFT: false
+
+eureka.client.enabled: false
+eureka.client.fetch-registry: false
 eureka:
   client:
     serviceUrl:

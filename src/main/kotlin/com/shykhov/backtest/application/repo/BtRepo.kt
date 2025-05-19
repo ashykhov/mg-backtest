@@ -1,6 +1,7 @@
 package com.shykhov.backtest.application.repo
 
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.stereotype.Repository
 
-class BtRepo : JpaRepository<{
-}
+@Repository
+interface BtRepo : JpaRepository<BtEntity, String>

@@ -16,6 +16,7 @@ import com.shykhov.common.sharedClasses.Ticker.Companion.ticker
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.tags.Tag
 import java.time.Clock
+import java.time.Instant
 import mu.KLogging
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.annotation.Validated
@@ -65,6 +66,8 @@ class BacktestController(
         @RequestParam("sellType") sellType: PairType,
         @RequestParam("btType") btType: BtType,
         @RequestParam("btParams") btParams: Set<String>,
+        @RequestParam("timeFrom") timeFrom: Instant,
+        @RequestParam("timeTo") timeTo: Instant,
     ): ResponseEntity<BtDto> {
 
         val buyBqet = buyBase.ticker / buyQuote.ticker on buyExchange type buyType
@@ -74,8 +77,15 @@ class BacktestController(
             sellBqet = sellBqet,
             btType = btType,
             btParams = btParams,
+            timeFrom = timeFrom,
+            timeTo = timeTo,
         )
-        return ResponseEntity.ok(BtDto.fromModel(result))
+        val dto = BtDto.fromModel(result)
+        return if (dto != null) {
+            ResponseEntity.ok(dto)
+        } else {
+            ResponseEntity.notFound().build()
+        }
     }
 
     @GetMapping("/{id}")
@@ -83,7 +93,12 @@ class BacktestController(
         @RequestParam("id") id: String,
     ): ResponseEntity<BtDto> {
         val resp = btService.get(id)
-        return ResponseEntity.ok(BtDto.fromModel(resp))
+        val dto = BtDto.fromModel(resp)
+        return if (dto != null) {
+            ResponseEntity.ok(dto)
+        } else {
+            ResponseEntity.notFound().build()
+        }
     }
 
     @GetMapping("/{id}/result/{tickOutputType}")

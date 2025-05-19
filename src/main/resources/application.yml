@@ -51,9 +51,10 @@ spring:
         id.db_structure_naming_strategy: legacy
     hibernate:
       ddl-auto: none
-  # Flyway для миграций (если нужен)
+  # Flyway для миграций
   flyway:
-    enabled: false
+    enabled: true
+    baseline-on-migrate: true
 
   rsocket:
     server:
@@ -123,6 +124,10 @@ backtest:
     backtests-per-chunk: ${MG_BACKTEST_CHUNK_SIZE:100}
     compress-backtest-after: ${MG_BACKTEST_COMPRESS_AFTER:500}
 # Metrics
+api:
+  url:
+    candle: ${MG_CANDLE_API_URL:http://localhost:8095/candle}
+
 management:
   endpoints.web.exposure.include: "*"
   prometheus.metrics.export.enabled: true
