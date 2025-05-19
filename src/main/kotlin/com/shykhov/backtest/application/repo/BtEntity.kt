@@ -54,11 +54,11 @@ data class BtEntity(
     @Column(name = "status")
     val status: String,
 
-    @Column(name = "started_at")
-    val startedAt: Instant,
+    @Column(name = "job_started_at")
+    val jobStartedAt: Instant,
 
-    @Column(name = "finished_at", nullable = true)
-    val finishedAt: Instant?,
+    @Column(name = "job_finished_at", nullable = true)
+    val jobFinishedAt: Instant?,
 
     @Column(name = "config", columnDefinition = "jsonb")
     val config: String,

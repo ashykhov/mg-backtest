@@ -1,7 +1,6 @@
 package com.shykhov.backtest.application.mapper
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.shykhov.backtest.api.common.dto.BtTypeConfig
 import com.shykhov.backtest.application.model.BtModel
 import com.shykhov.backtest.application.repo.BtEntity
@@ -32,7 +31,7 @@ class BtMapper(
             btParams = objectMapper.readValue(entity.btParams, Set::class.java) as Set<String>,
             id = entity.btId,
             status = entity.status,
-            startedAt = entity.startedAt,
+            startedAt = entity.jobStartedAt,
             finishedAt = entity.finishedAt,
             config = objectMapper.readValue(entity.config, BtTypeConfig::class.java),
             outputConfig = entity.outputConfig?.let { objectMapper.readValue(it, BtTypeConfig::class.java) },
@@ -57,7 +56,7 @@ class BtMapper(
             btType = model.btType,
             btParams = objectMapper.writeValueAsString(model.btParams),
             status = model.status,
-            startedAt = model.startedAt,
+            jobStartedAt = model.startedAt,
             finishedAt = model.finishedAt,
             config = objectMapper.writeValueAsString(model.config),
             outputConfig = model.outputConfig?.let { objectMapper.writeValueAsString(it) },
