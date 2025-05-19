@@ -1,4 +1,5 @@
 spring:
+  application.name: ${MG_APP_NAME:candle}
   security:
     oauth2:
       resourceserver:
@@ -11,16 +12,18 @@ spring:
     server:
       mapping-path: /rsocket
   jpa:
-    show-sql: true
+    show-sql: false
+#    show-sql: true
     hibernate:
-      ddl-auto: create-drop
+#      ddl-auto: create-drop
+      ddl-auto: update
     properties:
       hibernate:
         format_sql: true
         generate_statistics: false
 
-eureka.client.enabled: false
-eureka.client.fetch-registry: false
+eureka.client.enabled: true
+eureka.client.fetch-registry: true
 eureka:
   client:
     serviceUrl:

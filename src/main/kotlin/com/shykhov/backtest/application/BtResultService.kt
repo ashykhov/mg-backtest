@@ -53,12 +53,12 @@ class BtResultService(
 
         val a = candleClient.getTickHistory(
             subject = subject.value,
-            timeFrame = TimeFrame.SECONDS_30.name,
+            timeFrame = bt.timeFrame.value,
             bqetId = bt.bqetBs.buyBqet.bqetId,
             limit = 5000,
             beforeTs = bt.timeTo.toEpochMilli(),
-            fillGaps = true,
-            cutToLimit = true,
+            fillGaps = false,
+            cutToLimit = false,
         ).body
         return a?.map { tickDto -> NullableTick(tickDto.value, Instant.ofEpochMilli(tickDto.ts)) }
             ?: emptyList()
@@ -73,12 +73,12 @@ class BtResultService(
 
         val a = candleClient.getTickHistory(
             subject = subject.value,
-            timeFrame = TimeFrame.SECONDS_30.name,
+            timeFrame = bt.timeFrame.value,
             bqetId = bt.bqetBs.buyBqet.bqetId,
             limit = 5000,
             beforeTs = bt.timeTo.toEpochMilli(),
-            fillGaps = true,
-            cutToLimit = true,
+            fillGaps = false,
+            cutToLimit = false,
         ).body
         return a?.map { tickDto -> NullableTick(tickDto.value, Instant.ofEpochMilli(tickDto.ts)) }
             ?: emptyList()
@@ -93,12 +93,12 @@ class BtResultService(
 
         val a = candleClient.getTickHistory(
             subject = subject.value,
-            timeFrame = TimeFrame.SECONDS_30.name,
+            timeFrame = bt.timeFrame.value,
             bqetId = bt.bqetBs.sellBqet.bqetId,
             limit = 5000,
             beforeTs = bt.timeTo.toEpochMilli(),
-            fillGaps = true,
-            cutToLimit = true,
+            fillGaps = false,
+            cutToLimit = false,
         ).body
         return a?.map { tickDto -> NullableTick(tickDto.value, Instant.ofEpochMilli(tickDto.ts)) }
             ?: emptyList()
@@ -113,12 +113,12 @@ class BtResultService(
 
         val a = candleClient.getTickHistory(
             subject = subject.value,
-            timeFrame = TimeFrame.SECONDS_30.name,
+            timeFrame = bt.timeFrame.value,
             bqetId = bt.bqetBs.sellBqet.bqetId,
             limit = 5000,
             beforeTs = bt.timeTo.toEpochMilli(),
-            fillGaps = true,
-            cutToLimit = true,
+            fillGaps = false,
+            cutToLimit = false,
         ).body
         return a?.map { tickDto -> NullableTick(tickDto.value, Instant.ofEpochMilli(tickDto.ts)) }
             ?: emptyList()
