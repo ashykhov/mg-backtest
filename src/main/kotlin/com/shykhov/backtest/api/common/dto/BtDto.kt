@@ -29,8 +29,7 @@ data class BtDto(
     val status: String,
     val startedAt: Instant,
     val finishedAt: Instant?,
-    val config: BtTypeConfig,
-    val outputConfig: BtTypeConfig?,
+    val tickDataRequested: BtTypeConfig,
     val timeFrom: Instant,
     val timeTo: Instant,
 ) {
@@ -54,8 +53,7 @@ data class BtDto(
                 status = model.status,
                 startedAt = model.startedAt,
                 finishedAt = model.finishedAt,
-                config = model.config,
-                outputConfig = model.outputConfig,
+                tickDataRequested = model.tickDataRequested,
                 timeFrom = model.timeFrom,
                 timeTo = model.timeTo,
             )

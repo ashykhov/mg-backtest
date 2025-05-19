@@ -7,16 +7,13 @@ import com.shykhov.backtest.api.common.dto.TickOutputType
 import com.shykhov.backtest.application.BtResultService
 import com.shykhov.backtest.application.BtService
 import com.shykhov.backtest.application.BtTypeConfigService
-import com.shykhov.common.candle.subject.TickSubject
 import com.shykhov.common.candle.timeframe.TimeFrame
 import com.shykhov.common.commonDto.TickDto
 import com.shykhov.common.commonDto.TickDto.Companion.toLinearPointResp
-import com.shykhov.common.commonDto.TimeFrameDto
 import com.shykhov.common.enums.Exchange
 import com.shykhov.common.enums.PairType
 import com.shykhov.common.sharedClasses.Ticker.Companion.ticker
 import io.swagger.v3.oas.annotations.Parameter
-import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.tags.Tag
 import java.time.Clock
 import java.time.Instant
@@ -80,6 +77,8 @@ class BacktestController(
         @RequestParam("btParams") btParams: Set<String> = emptySet(),
         @RequestParam("timeFrom") timeFrom: Instant? = null,
         @RequestParam("timeTo") timeTo: Instant? = null,
+        @RequestParam("tickDataRequested", required = false)
+        tickDataRequested: BtTypeConfig = config.getConfig(btType),
     ): ResponseEntity<BtDto> {
         val timeFrom = timeFrom ?: clock.instant().minusSeconds(60 * 60 * 24 * 30)
         val timeTo = timeTo ?: clock.instant()
@@ -93,8 +92,8 @@ class BacktestController(
             btParams = btParams,
             timeFrom = timeFrom,
             timeTo = timeTo,
-            timeFrame = TimeFrame.SECONDS_30
-
+            timeFrame = TimeFrame.SECONDS_30,
+            tickDataRequested = tickDataRequested,
         )
         val dto = BtDto.fromModel(result)
         return if (dto != null) {

@@ -65,12 +65,8 @@ data class BtEntity(
     val jobFinishedAt: Instant?,
 
     @Type(JsonType::class)
-    @Column(name = "config", columnDefinition = "jsonb")
-    val config: BtTypeConfig,
-
-    @Type(JsonType::class)
-    @Column(name = "output_config", columnDefinition = "jsonb", nullable = true)
-    val outputConfig: BtTypeConfig?,
+    @Column(name = "tick_data_requested", columnDefinition = "jsonb", nullable = true)
+    val tickDataRequested: BtTypeConfig,
 
     @Column(name = "time_from")
     val timeFrom: Instant,
@@ -96,8 +92,7 @@ data class BtEntity(
             status = status,
             startedAt = jobStartedAt,
             finishedAt = jobFinishedAt,
-            config = config,
-            outputConfig = outputConfig,
+            tickDataRequested = tickDataRequested,
             timeFrom = timeFrom,
             timeTo = timeTo,
             timeFrame = timeFrame,
