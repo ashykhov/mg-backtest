@@ -28,10 +28,13 @@ data class BtDto(
     val id: String,
     val status: String,
     val startedAt: Instant,
-    val finishedAt: Instant,
+    val finishedAt: Instant?,
     val config: BtTypeConfig,
-
-    ) {
+    val outputConfig: BtTypeConfig?,
+    val result: Any?,
+    val timeFrom: Instant,
+    val timeTo: Instant,
+) {
     companion object {
         fun fromModel(model: BtModel?): BtDto? {
             if(model == null) {
@@ -53,6 +56,10 @@ data class BtDto(
                 startedAt = model.startedAt,
                 finishedAt = model.finishedAt,
                 config = model.config,
+                outputConfig = model.outputConfig,
+                result = model.result,
+                timeFrom = model.timeFrom,
+                timeTo = model.timeTo,
             )
         }
     }

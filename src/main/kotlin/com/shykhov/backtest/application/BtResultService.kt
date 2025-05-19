@@ -2,11 +2,22 @@ package com.shykhov.backtest.application
 
 import com.shykhov.api.candle.client.CandleClient
 import com.shykhov.backtest.api.common.dto.TickOutputType
-import com.shykhov.backtest.common.toBqetId
+import com.shykhov.backtest.api.common.dto.TickOutputType.FUNDING_RATE_BUY
+import com.shykhov.backtest.api.common.dto.TickOutputType.FUNDING_RATE_SELL
+import com.shykhov.backtest.api.common.dto.TickOutputType.PRICE_BUY_ASK
+import com.shykhov.backtest.api.common.dto.TickOutputType.PRICE_BUY_BID
+import com.shykhov.backtest.api.common.dto.TickOutputType.PRICE_SELL_ASK
+import com.shykhov.backtest.api.common.dto.TickOutputType.PRICE_SELL_BID
+import com.shykhov.backtest.api.common.dto.TickOutputType.PRICE_SPREAD
+import com.shykhov.backtest.application.model.BtModel
+import com.shykhov.common.candle.subject.TickSubject
+import com.shykhov.common.candle.subject.TickSubject.PERP_BID
 import com.shykhov.common.candle.tick.ITick
-import com.shykhov.common.commonDto.TickDto
-import com.shykhov.common.enums.TimeFrame
-import kotlinx.coroutines.runBlocking
+import com.shykhov.common.candle.tick.NullableTick
+import com.shykhov.common.candle.timeframe.TimeFrame
+import com.shykhov.common.enums.PairType.FUTURES
+import com.shykhov.common.enums.PairType.SPOT
+import java.time.Instant
 import org.springframework.stereotype.Service
 
 @Service
@@ -15,46 +26,103 @@ class BtResultService(
     private val candleClient: CandleClient,
 ) {
 
-    fun getResult(btId: String, type: TickOutputType): List<ITick> {
+    suspend fun getResult(btId: String, type: TickOutputType): List<ITick> {
         val backtest = btService.get(btId) ?: return emptyList()
-        
-        val (subject, bqetId) = when (type) {
-            TickOutputType.PRICE_BUY_BID -> "spot-bid" to backtest.bqetBs.buyBqet.toBqetId()
-            TickOutputType.PRICE_BUY_ASK -> "spot-ask" to backtest.bqetBs.buyBqet.toBqetId()
-            TickOutputType.PRICE_SELL_ASK -> "perp-ask" to backtest.bqetBs.sellBqet.toBqetId()
-            TickOutputType.PRICE_SELL_BID -> "perp-bid" to backtest.bqetBs.sellBqet.toBqetId()
-            TickOutputType.PRICE_SPREAD -> "price-spread" to backtest.bqetBs.buyBqet.toBqetId()
-            TickOutputType.FUNDING_RATE_BUY -> "funding-rate" to backtest.bqetBs.buyBqet.toBqetId()
-            TickOutputType.FUNDING_RATE_SELL -> "funding-rate" to backtest.bqetBs.sellBqet.toBqetId()
+
+        val res = when (type) {
+            PRICE_BUY_BID -> processPriceBuyBid(backtest)
+            PRICE_BUY_ASK -> processPriceBuyAsk(backtest)
+            PRICE_SELL_ASK -> processPriceSellAsk(backtest)
+            PRICE_SELL_BID -> processPriceSellBid(backtest)
+            PRICE_SPREAD -> emptyList()
+            FUNDING_RATE_BUY -> emptyList()
+            FUNDING_RATE_SELL -> emptyList()
         }
-        
-        return runBlocking {
-            try {
-                val response = candleClient.getTickHistory(
-                    subject = subject,
-                    timeFrame = TimeFrame.MIN_1.toString(),
-                    bqetId = bqetId,
-                    limit = 5000,
-                    beforeTs = null,
-                    fillGaps = true,
-                    cutToLimit = true
-                )
-                
-                response.body?.map { tickDto ->
-                    // Преобразуем TickDto в ITick
-                    object : ITick {
-                        override fun getTime(): Long = tickDto.timestamp
-                        override fun getOpen(): Double = tickDto.open
-                        override fun getHigh(): Double = tickDto.high
-                        override fun getLow(): Double = tickDto.low
-                        override fun getClose(): Double = tickDto.close
-                        override fun getVolume(): Long = tickDto.volumeLong
-                    }
-                } ?: emptyList()
-            } catch (e: Exception) {
-                emptyList()
-            }
-        }
+
+        return res
     }
+
+
+    suspend fun processPriceBuyBid(
+        bt: BtModel,
+    ): List<ITick> {
+        val subject = if (bt.bqetBs.buyBqet.type == SPOT) TickSubject.SPOT_BID
+        else if (bt.bqetBs.buyBqet.type == FUTURES) PERP_BID
+        else throw IllegalArgumentException("Unknown type: ${bt.bqetBs.buyBqet.type}")
+
+
+        val a = candleClient.getTickHistory(
+            subject = subject.value,
+            timeFrame = TimeFrame.SECONDS_30.name,
+            bqetId = bt.bqetBs.buyBqet.bqetId,
+            limit = 5000,
+            beforeTs = bt.timeTo.toEpochMilli(),
+            fillGaps = true,
+            cutToLimit = true,
+        ).body
+        return a?.map { tickDto -> NullableTick(tickDto.value, Instant.ofEpochMilli(tickDto.ts)) }
+            ?: emptyList()
+    }
+
+    suspend fun processPriceBuyAsk(
+        bt: BtModel,
+    ): List<ITick> {
+        val subject = if (bt.bqetBs.buyBqet.type == SPOT) TickSubject.SPOT_ASK
+        else if (bt.bqetBs.buyBqet.type == FUTURES) TickSubject.PERP_ASK
+        else throw IllegalArgumentException("Unknown type: ${bt.bqetBs.buyBqet.type}")
+
+        val a = candleClient.getTickHistory(
+            subject = subject.value,
+            timeFrame = TimeFrame.SECONDS_30.name,
+            bqetId = bt.bqetBs.buyBqet.bqetId,
+            limit = 5000,
+            beforeTs = bt.timeTo.toEpochMilli(),
+            fillGaps = true,
+            cutToLimit = true,
+        ).body
+        return a?.map { tickDto -> NullableTick(tickDto.value, Instant.ofEpochMilli(tickDto.ts)) }
+            ?: emptyList()
+    }
+
+    suspend fun processPriceSellAsk(
+        bt: BtModel,
+    ): List<ITick> {
+        val subject = if (bt.bqetBs.sellBqet.type == SPOT) TickSubject.SPOT_ASK
+        else if (bt.bqetBs.sellBqet.type == FUTURES) TickSubject.PERP_ASK
+        else throw IllegalArgumentException("Unknown type: ${bt.bqetBs.sellBqet.type}")
+
+        val a = candleClient.getTickHistory(
+            subject = subject.value,
+            timeFrame = TimeFrame.SECONDS_30.name,
+            bqetId = bt.bqetBs.sellBqet.bqetId,
+            limit = 5000,
+            beforeTs = bt.timeTo.toEpochMilli(),
+            fillGaps = true,
+            cutToLimit = true,
+        ).body
+        return a?.map { tickDto -> NullableTick(tickDto.value, Instant.ofEpochMilli(tickDto.ts)) }
+            ?: emptyList()
+    }
+
+    suspend fun processPriceSellBid(
+        bt: BtModel,
+    ): List<ITick> {
+        val subject = if (bt.bqetBs.sellBqet.type == SPOT) TickSubject.SPOT_BID
+        else if (bt.bqetBs.sellBqet.type == FUTURES) PERP_BID
+        else throw IllegalArgumentException("Unknown type: ${bt.bqetBs.sellBqet.type}")
+
+        val a = candleClient.getTickHistory(
+            subject = subject.value,
+            timeFrame = TimeFrame.SECONDS_30.name,
+            bqetId = bt.bqetBs.sellBqet.bqetId,
+            limit = 5000,
+            beforeTs = bt.timeTo.toEpochMilli(),
+            fillGaps = true,
+            cutToLimit = true,
+        ).body
+        return a?.map { tickDto -> NullableTick(tickDto.value, Instant.ofEpochMilli(tickDto.ts)) }
+            ?: emptyList()
+    }
+
 
 }

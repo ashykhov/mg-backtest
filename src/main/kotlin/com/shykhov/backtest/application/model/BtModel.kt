@@ -13,6 +13,10 @@ data class BtModel(
     val id: String,
     val status: String,
     val startedAt: Instant,
-    val finishedAt: Instant,
+    val finishedAt: Instant?,
     val config: BtTypeConfig,
+    val outputConfig: BtTypeConfig?,
+    val result: Any?,
+    val timeFrom: Instant,
+    val timeTo: Instant,
 ) : IBqetBs

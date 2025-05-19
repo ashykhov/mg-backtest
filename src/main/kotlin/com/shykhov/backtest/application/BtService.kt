@@ -1,7 +1,10 @@
 package com.shykhov.backtest.application
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.shykhov.backtest.api.common.dto.BtType
 import com.shykhov.backtest.api.common.dto.BtTypeConfig
+import com.shykhov.backtest.application.mapper.BtMapper
 import com.shykhov.backtest.application.model.BtModel
 import com.shykhov.backtest.application.repo.BtEntity
 import com.shykhov.backtest.application.repo.BtRepo
@@ -17,10 +20,11 @@ import org.springframework.transaction.annotation.Transactional
 class BtService(
     private val clock: Clock,
     private val btRepo: BtRepo,
+    private val btMapper: BtMapper,
 ) {
 
     fun get(btId: String): BtModel? {
-        return btRepo.findById(btId).orElse(null)?.toModel()
+        return btRepo.findByBtId(btId)?.let { btMapper.entityToModel(it) }
     }
 
     @Transactional
@@ -32,42 +36,36 @@ class BtService(
         timeFrom: Instant,
         timeTo: Instant,
     ): BtModel {
-        val entity = BtEntity(
-            id = UUID.randomUUID().toString(),
+        val model = BtModel(
             bqetBs = buyBqet toBqetBs sellBqet,
             btType = btType,
             btParams = btParams,
+            id = UUID.randomUUID().toString(),
             status = "CREATED",
             startedAt = clock.instant(),
             finishedAt = null,
             config = BtTypeConfig(emptySet()),
+            outputConfig = null,
+            result = null,
             timeFrom = timeFrom,
             timeTo = timeTo,
         )
         
+        val entity = btMapper.modelToEntity(model)
         val saved = btRepo.save(entity)
-        return saved.toModel()
+        return btMapper.entityToModel(saved)
     }
     
     @Transactional
     fun updateStatus(btId: String, status: String): BtModel? {
-        val entity = btRepo.findById(btId).orElse(null) ?: return null
-        val updated = entity.copy(
+        val entity = btRepo.findByBtId(btId) ?: return null
+        val model = btMapper.entityToModel(entity)
+        val updatedModel = model.copy(
             status = status,
-            finishedAt = if (status == "COMPLETED" || status == "FAILED") clock.instant() else entity.finishedAt
+            finishedAt = if (status == "COMPLETED" || status == "FAILED") clock.instant() else model.finishedAt
         )
-        val saved = btRepo.save(updated)
-        return saved.toModel()
+        val updatedEntity = btMapper.modelToEntity(updatedModel, entity.id)
+        val saved = btRepo.save(updatedEntity)
+        return btMapper.entityToModel(saved)
     }
-    
-    private fun BtEntity.toModel() = BtModel(
-        bqetBs = this.bqetBs,
-        btType = this.btType,
-        btParams = this.btParams,
-        id = this.id,
-        status = this.status,
-        startedAt = this.startedAt,
-        finishedAt = this.finishedAt ?: clock.instant(),
-        config = this.config,
-    )
 }
