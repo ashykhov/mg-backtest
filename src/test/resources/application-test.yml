@@ -1,0 +1,62 @@
+server.port: 8207
+
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        enabled: false
+      client:
+        enabled: false
+  main.allow-bean-definition-overriding: true
+  datasource:
+    url: jdbc:postgresql://localhost:5432/backtest-test
+    password: test
+    username: test
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+
+
+scheduling:
+  # Частота сохранения снимков данных
+  snapshotFunding: ${MG_SCHEDULING_SNAPSHOT_CRON_FUNDING:0 * * * * *}
+  snapshotPrice: ${MG_SCHEDULING_SNAPSHOT_CRON_PRICE:0 * * * * *}
+  # Частота выполнения очистки
+  snapshotFundingCleanup: ${MG_SCHEDULING_SNAPSHOT_CLEANUP_CRON_FUNDING:0 0 * * * *}
+  snapshotPriceCleanup: ${MG_SCHEDULING_SNAPSHOT_CLEANUP_CRON_PRICE:0 0 * * * *}
+  # Срок хранения данных
+  snapshotFundingKeepAlive: ${MG_SCHEDULING_SNAPSHOT_KEEP_ALIVE_FUNDING:7d}
+  snapshotPriceKeepAlive: ${MG_SCHEDULING_SNAPSHOT_KEEP_ALIVE_PRICE:7d}
+
+backtest:
+  capture:
+    enabled-input:
+      SPOT_ASK: ${MG_BACKTEST_CAPTURE_ENABLED_SPOT_ASK:30s,1m,5m}
+      SPOT_BID: ${MG_BACKTEST_CAPTURE_ENABLED_SPOT_BID:30s,1m,5m}
+      PERP_ASK: ${MG_BACKTEST_CAPTURE_ENABLED_PERP_ASK:30s,1m,5m}
+      PERP_BID: ${MG_BACKTEST_CAPTURE_ENABLED_PERP_BID:30s,1m,5m}
+      FUND_RATE: ${MG_BACKTEST_CAPTURE_ENABLED_FUNDING_RATE:30s,1m,5m}
+      CALC_PRFT: ${MG_BACKTEST_CAPTURE_ENABLED_CALCULATION_PROFIT:30s,1m,5m}
+    retention-input:
+      "10s": ${MG_BACKTEST_RETENTION_SECONDS_10:5000}
+      "30s": ${MG_BACKTEST_RETENTION_SECONDS_30:5000}
+      "1m": ${MG_BACKTEST_RETENTION_MINUTES_1:5000}
+      "5m": ${MG_BACKTEST_RETENTION_MINUTES_5:5000}
+    tick-retention:
+      SPOT_ASK: ${MG_TICK_RETENTION_SPOT_ASK:PT20M}
+      SPOT_BID: ${MG_TICK_RETENTION_SPOT_BID:PT20M}
+      PERP_ASK: ${MG_TICK_RETENTION_PRICE_ASK:PT20M}
+      PERP_BID: ${MG_TICK_RETENTION_PRICE_BID:PT20M}
+      FUND_RATE: ${MG_TICK_RETENTION_FUNDING_RATE:PT20M}
+      CALC_PRFT: ${MG_TICK_RETENTION_CALCULATION_PROFIT:PT20M}
+    backtests-per-chunk: ${MG_BACKTEST_CHUNK_SIZE:100}
+    compress-backtest-after: ${MG_BACKTEST_COMPRESS_AFTER:500}
+# Metrics
+management:
+  endpoints.web.exposure.include: "*"
+  prometheus.metrics.export.enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}

@@ -1,0 +1,35 @@
+spring:
+  application.name: ${MG_APP_NAME:backtest}
+  security:
+    oauth2:
+      resourceserver:
+        enabled: false
+      client:
+        enabled: false
+  webflux:
+    base-path: "/"
+  rsocket:
+    server:
+      mapping-path: /rsocket
+#  jpa:
+#    show-sql: false
+#    show-sql: true
+#    hibernate:
+#      ddl-auto: create-drop
+#      ddl-auto: update
+#    properties:
+#      hibernate:
+#        format_sql: true
+#        generate_statistics: false
+
+eureka.client.enabled: true
+eureka.client.fetch-registry: true
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+      registryFetchIntervalSeconds: 1  # интервал получения регистра (по умолчанию 30)
+  instance:
+    hostname: localhost
+    leaseRenewalIntervalInSeconds: 1  # интервал обновлений (по умолчанию 30)
+    leaseExpirationDurationInSeconds: 1  # время жизни аренды (по умолчанию 90)

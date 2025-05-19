@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <springProperty scope="context" name="MG_LOGSTASH_ENABLED" source="MG_LOGSTASH_ENABLED" defaultValue="false"/>
+    <springProperty scope="context" name="SPRING_APPLICATION_NAME" source="spring.application.name"/>
+    <springProperty scope="context" name="SPRING_PROFILES_ACTIVE" source="spring.profiles.active"/>
+    <springProperty scope="context" name="LOG_LEVEL" source="MG_LOGGING_LEVEL_ROOT" defaultValue="INFO"/>
+
+    <appender name="CONSOLE_PRETTY" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>
+                %clr(%d{yyyy-MM-dd HH:mm:ss.SSS}) %clr(%5p) %clr(${PID}){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint}%clr(%X{ERROR_ID}){faint} %clr(%X{USERNAME}){faint} %clr(%X{USER_AGENT}){green}%clr(:){faint} %m%n%wEx
+            </pattern>
+        </encoder>
+    </appender>
+
+    <appender name="CONSOLE_JSON" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <customFields>{"app":"${SPRING_APPLICATION_NAME}","env":"${SPRING_PROFILES_ACTIVE:-unknown}"}</customFields>
+            <timestampPattern>yyyy-MM-dd'T'HH:mm:ss.SSS</timestampPattern>
+            <fieldNames>
+                <timestamp>@timestamp</timestamp>
+                <version>[ignore]</version>
+                <logger>logger</logger>
+                <thread>thread</thread>
+                <level>level</level>
+                <levelValue>[ignore]</levelValue>
+                <message>message</message>
+            </fieldNames>
+            <includeContext>false</includeContext>
+            <includeMdcKeyName>ERROR_ID</includeMdcKeyName>
+            <includeMdcKeyName>USERNAME</includeMdcKeyName>
+            <includeMdcKeyName>USER_AGENT</includeMdcKeyName>
+            <includeMdcKeyName>traceId</includeMdcKeyName>
+            <includeMdcKeyName>spanId</includeMdcKeyName>
+        </encoder>
+    </appender>
+
+    <if condition='property("MG_LOGSTASH_ENABLED").equals("true")'>
+        <then>
+            <root level="${LOG_LEVEL}">
+                <appender-ref ref="CONSOLE_JSON"/>
+            </root>
+        </then>
+        <else>
+            <root level="${LOG_LEVEL}">
+                <appender-ref ref="CONSOLE_PRETTY"/>
+            </root>
+        </else>
+    </if>
+
+</configuration>

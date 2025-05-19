@@ -1,0 +1,24 @@
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        enabled: ${SPRING_SECURITY_SERVER_ENABLED}
+        jwt:
+          issuer-uri: https://auth.gaynance.com/realms/${KEYCLOAK_REALM}
+      client:
+        enabled: ${SPRING_SECURITY_CLIENT_ENABLED}
+        registration:
+          keycloak:
+            client-id: ${SPRING_SECURITY_CLIENT_ID}
+            client-secret: ${SPRING_SECURITY_CLIENT_SECRET}
+            authorization-grant-type: client_credentials
+            scope: openid
+        provider:
+          keycloak:
+            token-uri: https://auth.gaynance.com/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token
+
+app:
+  kafka:
+    topic:
+      opportunities:
+        enabled: ${MG_KAFKA_TOPIC_OPPORTUNITIES_ENABLED:true}

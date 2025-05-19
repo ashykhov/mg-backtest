@@ -1,0 +1,41 @@
+version: "3.8"
+name: mg
+
+services:
+  backtest-database:
+    image: timescale/timescaledb:latest-pg15
+    container_name: backtest-database
+    restart: unless-stopped
+    ports:
+      - "63593:5432"
+    environment:
+      - POSTGRES_DB=backtest
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - TZ=UTC
+      - PGTZ=UTC
+      # Оптимизированные параметры
+      - TIMESCALEDB_TUNE_SHARED_BUFFERS=3GB
+      - TIMESCALEDB_TUNE_EFFECTIVE_CACHE_SIZE=6GB
+      - TIMESCALEDB_TUNE_WORK_MEM=32MB
+      - TIMESCALEDB_TUNE_MAINTENANCE_WORK_MEM=512MB
+      - TIMESCALEDB_TUNE_MAX_CONNECTIONS=200
+      - TIMESCALEDB_TUNE_MAX_BACKGROUND_WORKERS=8
+      - TIMESCALEDB_TUNE_AUTOVACUUM_VACUUM_SCALE_FACTOR=0.01
+      - TIMESCALEDB_TUNE_AUTOVACUUM_ANALYZE_SCALE_FACTOR=0.005
+      - TIMESCALEDB_TUNE_WAL_BUFFERS=16MB
+      - TIMESCALEDB_TUNE_MAX_WAL_SIZE=2GB
+      - TIMESCALEDB_TUNE_CHECKPOINT_TIMEOUT=10min
+      - TIMESCALEDB_TUNE_CHECKPOINT_COMPLETION_TARGET=0.9
+      - TIMESCALEDB_TUNE_RANDOM_PAGE_COST=1.1
+    volumes:
+      - backtest-database:/var/lib/postgresql/data
+    networks:
+      - backtest-net
+
+networks:
+  backtest-net:
+    driver: bridge
+
+volumes:
+  backtest-database: {}
