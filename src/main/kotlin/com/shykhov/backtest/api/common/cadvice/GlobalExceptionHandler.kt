@@ -1,14 +1,12 @@
 package com.shykhov.backtest.api.common.cadvice
 
-import com.shykhov.common.backtest.BadBacktestRequest
-import com.shykhov.common.backtest.timeframe.TimeFrame
+import java.time.Clock
 import org.springframework.http.HttpStatus.BAD_REQUEST
 import org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.context.request.WebRequest
-import java.time.Clock
 
 @ControllerAdvice
 class GlobalExceptionHandler(
@@ -33,18 +31,5 @@ class GlobalExceptionHandler(
         return ResponseEntity(errorResponse, status)
     }
 
-    @ExceptionHandler(BadBacktestRequest::class)
-    fun handleBadBacktestRequest(ex: BadBacktestRequest, request: WebRequest): ResponseEntity<ErrorResponse> {
-        val requested = TimeFrame.fromValue(ex.req.second.name)
-        val allowed = ex.allowed.map { TimeFrame.fromValue(it.second.name) }
-        val errorResponse = ErrorResponse(
-            timestamp = clock.instant(),
-            status = BAD_REQUEST.value(),
-            error = BAD_REQUEST.reasonPhrase,
-            message = "TimeFrame $requested is disabled. Allowed: $allowed",
-            path = request.getDescription(false).substring(4),
-        )
 
-        return ResponseEntity(errorResponse, BAD_REQUEST)
-    }
 }
