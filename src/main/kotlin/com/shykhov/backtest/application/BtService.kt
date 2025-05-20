@@ -51,4 +51,10 @@ class BtService(
         return saved.toModel()
     }
 
+    fun getAll(limit: Int): List<BtModel> {
+        return btRepo.findAll()
+            .take(limit)
+            .map { it.toModel() }
+    }
+
 }

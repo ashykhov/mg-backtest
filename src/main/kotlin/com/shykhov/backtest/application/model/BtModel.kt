@@ -27,6 +27,7 @@ data class BtModel(
     val timeFrom: Instant,
     val timeTo: Instant,
     val timeFrame: TimeFrame,
+    
 
     val id: Long? = null,
     ) : IBqetBs {

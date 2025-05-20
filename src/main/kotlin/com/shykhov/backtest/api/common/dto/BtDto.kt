@@ -3,6 +3,7 @@ package com.shykhov.backtest.api.common.dto
 import com.shykhov.backtest.application.model.BtModel
 import com.shykhov.common.enums.Exchange
 import com.shykhov.common.enums.PairType
+import com.shykhov.common.numbers.decimal
 import com.shykhov.common.sharedClasses.Ticker
 import com.shykhov.common.sharedClasses.bqetBs.BqetBs.Companion.buyBase
 import com.shykhov.common.sharedClasses.bqetBs.BqetBs.Companion.buyExchange
@@ -12,6 +13,7 @@ import com.shykhov.common.sharedClasses.bqetBs.BqetBs.Companion.sellBase
 import com.shykhov.common.sharedClasses.bqetBs.BqetBs.Companion.sellExchange
 import com.shykhov.common.sharedClasses.bqetBs.BqetBs.Companion.sellQuote
 import com.shykhov.common.sharedClasses.bqetBs.BqetBs.Companion.sellType
+import java.math.BigDecimal
 import java.time.Instant
 
 data class BtDto(
@@ -32,30 +34,31 @@ data class BtDto(
     val tickDataRequested: BtTypeConfig,
     val timeFrom: Instant,
     val timeTo: Instant,
+    val profit: BigDecimal? = 42.decimal,
+    val profitPercent: BigDecimal? = 2.decimal,
+    val budget: BigDecimal =  1000.decimal,
 ) {
     companion object {
-        fun fromModel(model: BtModel?): BtDto? {
-            if (model == null) {
-                return null
-            }
+        fun BtModel.toDto(): BtDto {
+
             return BtDto(
-                buyBase = model.bqetBs.buyBase,
-                buyQuote = model.bqetBs.buyQuote,
-                buyExchange = model.bqetBs.buyExchange,
-                buyType = model.bqetBs.buyType,
-                sellBase = model.bqetBs.sellBase,
-                sellQuote = model.bqetBs.sellQuote,
-                sellExchange = model.bqetBs.sellExchange,
-                sellType = model.bqetBs.sellType,
-                btType = model.btType,
-                btParams = model.btParams,
-                id = model.id!!,
-                status = model.status,
-                startedAt = model.startedAt,
-                finishedAt = model.finishedAt,
-                tickDataRequested = model.tickDataRequested,
-                timeFrom = model.timeFrom,
-                timeTo = model.timeTo,
+                buyBase = bqetBs.buyBase,
+                buyQuote = bqetBs.buyQuote,
+                buyExchange = bqetBs.buyExchange,
+                buyType = bqetBs.buyType,
+                sellBase = bqetBs.sellBase,
+                sellQuote = bqetBs.sellQuote,
+                sellExchange = bqetBs.sellExchange,
+                sellType = bqetBs.sellType,
+                btType = btType,
+                btParams = btParams,
+                id = id!!,
+                status = status,
+                startedAt = startedAt,
+                finishedAt = finishedAt,
+                tickDataRequested = tickDataRequested,
+                timeFrom = timeFrom,
+                timeTo = timeTo,
             )
         }
     }

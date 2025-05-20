@@ -1,6 +1,7 @@
 package com.shykhov.backtest.api.rest
 
 import com.shykhov.backtest.api.common.dto.BtDto
+import com.shykhov.backtest.api.common.dto.BtDto.Companion.toDto
 import com.shykhov.backtest.api.common.dto.BtType
 import com.shykhov.backtest.api.common.dto.BtTypeConfig
 import com.shykhov.backtest.api.common.dto.TickOutputType
@@ -37,6 +38,23 @@ class BacktestController(
     private val btResultService: BtResultService,
 ) {
     companion object : KLogging()
+
+    @GetMapping("/list")
+    suspend fun getList(
+        @RequestParam("limit", required = false) limit: Int = 100,
+        @RequestParam("strategy", required = false) strategy: String? = null,
+        @RequestParam("status", required = false) status: String? = null,
+        @RequestParam("startDate", required = false) startDate: String? = null,
+        @RequestParam("endDate", required = false) endDate: String? = null,
+        @RequestParam("sortBy", required = false) sortBy: String? = null,
+        @RequestParam("sortDirection", required = false) sortDirection: String? = null
+    ): ResponseEntity<List<BtDto>> {
+        // Here we would add filtering logic based on the parameters
+        // For now, we'll just handle the limit parameter as before
+        val resp = btService.getAll(limit)
+        val dto = resp.map { it.toDto() }
+        return ResponseEntity.ok(dto)
+    }
 
 
     @GetMapping("/types")
@@ -95,7 +113,7 @@ class BacktestController(
             timeFrame = TimeFrame.SECONDS_30,
             tickDataRequested = tickDataRequested,
         )
-        val dto = BtDto.fromModel(result)
+        val dto = result.toDto()
         return if (dto != null) {
             ResponseEntity.ok(dto)
         } else {
@@ -108,7 +126,7 @@ class BacktestController(
         @RequestParam("id") id: Long,
     ): ResponseEntity<BtDto> {
         val resp = btService.get(id)
-        val dto = BtDto.fromModel(resp)
+        val dto = resp?.toDto()
         return if (dto != null) {
             ResponseEntity.ok(dto)
         } else {
