@@ -142,6 +142,8 @@ class BacktestController(
         val timeFrame = TimeFrame.SECONDS_30
         val resp = btResultService.getResult(id, type)
             .toLinearPointResp(
+//                fillGaps = false,
+//                cutToLimit = false,
                 fillGaps = true,
                 cutToLimit = true,
                 tf = timeFrame,
